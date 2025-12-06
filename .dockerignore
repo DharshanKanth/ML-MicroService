@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+.env
+train_model.py
+test_model.py
+.ipynb_checkpoints/
+*.ipynb

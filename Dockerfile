@@ -1,16 +1,26 @@
+# -------- Stage 1: Build Image --------
+FROM python:3.10-slim AS builder
+
+WORKDIR /app
+
+COPY app/requirements.txt .
+
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+
+# -------- Stage 2: Runtime Image --------
 FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy and install dependencies
-COPY app/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
-# Copy the entire app folder into /app/app
+# Copy the entire app folder into the container
 COPY app /app/app
 
-# Expose port
 EXPOSE 8000
 
-# Start FastAPI server
+# Correct module path: app.main:app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
