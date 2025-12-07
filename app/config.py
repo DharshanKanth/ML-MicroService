@@ -14,6 +14,9 @@ class Settings(BaseSettings):
 
     # Default model version
     DEFAULT_VERSION: str = "v1"
+    # API Key for authentication
+    API_KEY: str
+
 
     class Config:
         env_file = ".env"     # Load environment variables from .env file

@@ -1,10 +1,14 @@
-from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Request, Header
+from pydantic import BaseModel, Field
 import numpy as np
 import joblib
 import time
 import json
 import os
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from .logger import logger
@@ -47,16 +51,26 @@ get_model(settings.DEFAULT_VERSION)
 # FastAPI Initialization
 # ----------------------------------------
 class IrisData(BaseModel):
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
+    sepal_length: float = Field(gt=0)
+    sepal_width: float = Field(gt=0)
+    petal_length: float = Field(gt=0)
+    petal_width: float = Field(gt=0)
 
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
 )
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+
+@app.exception_handler(RateLimitExceeded)
+def rate_limit_handler(request, exc):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded. Try again later."}
+    )
+
 
 
 # ----------------------------------------
@@ -92,10 +106,13 @@ def switch_model(version: str):
         return {"status": "success", "loaded_version": version}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
+    
 @app.post("/predict")
-def predict(data: IrisData, version: str = settings.DEFAULT_VERSION):
+@limiter.limit("10/minute")
+def predict(data: IrisData, version: str = settings.DEFAULT_VERSION, api_key: str = Header(None)):
+    if api_key != settings.API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     """Make prediction using the specified model version."""
     try:
         model_to_use = get_model(version)
