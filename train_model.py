@@ -13,6 +13,6 @@ clf=RandomForestClassifier(n_estimators=100,random_state=42)
 
 clf.fit(x_train,y_train)
 
-dump(clf,'iris_model.joblib')
+dump(clf,'app/models/v2.joblib')
 
-print("Model trained and saved to model.joblib!")
+print("Model trained and saved to app/models/v2.joblib!")

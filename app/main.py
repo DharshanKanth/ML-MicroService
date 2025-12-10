@@ -109,15 +109,19 @@ def switch_model(version: str):
     
 @app.post("/predict")
 @limiter.limit("10/minute")
-def predict(data: IrisData, version: str = settings.DEFAULT_VERSION, api_key: str = Header(None)):
+def predict(
+    request: Request,
+    data: IrisData,
+    version: str = settings.DEFAULT_VERSION,
+    api_key: str = Header(None)
+):
     if api_key != settings.API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    """Make prediction using the specified model version."""
     try:
         model_to_use = get_model(version)
 
-        input_data = np.array([[ 
+        input_data = np.array([[
             data.sepal_length,
             data.sepal_width,
             data.petal_length,
@@ -130,8 +134,7 @@ def predict(data: IrisData, version: str = settings.DEFAULT_VERSION, api_key: st
         if hasattr(model_to_use, "predict_proba"):
             proba = model_to_use.predict_proba(input_data).max()
         else:
-            proba = None    
-
+            proba = None
 
         logger.info(
             f"Prediction={prediction}, version={version}, data={input_data.tolist()}"
@@ -146,6 +149,7 @@ def predict(data: IrisData, version: str = settings.DEFAULT_VERSION, api_key: st
     except Exception as e:
         logger.error(f"Prediction error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+
 
 
 # ----------------------------------------

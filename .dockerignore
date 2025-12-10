@@ -3,7 +3,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.swp
-.env
+!.env
 train_model.py
 test_model.py
 .ipynb_checkpoints/
