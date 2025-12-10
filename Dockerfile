@@ -23,8 +23,7 @@ ENV PATH=/root/.local/bin:$PATH
 # Copy the entire app folder into the container
 COPY app /app/app
 
-# Copy .env file
-COPY .env /app/.env
+
 
 EXPOSE 8000
 
