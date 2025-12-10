@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="ml-microservice-banner.png" width="100%" height="300px />
+  <img src="ml-microservice-banner.png" width="100%" height="400px />
 </p>
 
 # **ML Microservice**
