@@ -1,89 +1,82 @@
 # ================================
-#   ML Microservice - Makefile (Windows Compatible)
+#   ML Microservice - Makefile
 # ================================
 
-# ---- Colors (Windows-safe minimal) ----
-GREEN = [RUN]
-BLUE = [INFO]
-YELLOW = [WARN]
-RED = [ERR]
+# ---- Colors ----
+GREEN := echo [RUN]
+BLUE := echo [INFO]
+YELLOW := echo [WARN]
+RED := echo [ERROR]
 
-APP = ml-api
-PORT = 8000
+# ---- Python Interpreter ----
+PYTHON=C:/Python313/python.exe
+
+# ---- App Settings ----
+APP=ml-api
+PORT=8000
 
 # ================================
 # BASIC COMMANDS
 # ================================
 
 run:
-	@echo $(GREEN) Starting FastAPI server...
-	python -m uvicorn app.main:app --reload --port $(PORT)
+	$(GREEN) Starting FastAPI server...
+	$(PYTHON) -m uvicorn app.main:app --reload --port $(PORT)
 
 train:
-	@echo $(BLUE) Training model...
-	python train_model.py
+	$(BLUE) Training model...
+	$(PYTHON) train_model.py
 
 test:
-	@echo $(YELLOW) Running tests...
-	pytest -q
+	$(YELLOW) Running tests...
+	$(PYTHON) -m pytest -q
 
 lint:
-	@echo $(YELLOW) Linting code...
-	flake8 app/
+	$(YELLOW) Linting...
+	$(PYTHON) -m flake8 app/
 
 # ================================
 # DOCKER COMMANDS
 # ================================
 
 docker-build:
-	@echo $(GREEN) Building Docker image...
+	$(GREEN) Building Docker image...
 	docker build -t $(APP) .
 
 docker-run:
-	@echo $(GREEN) Running Docker container...
+	$(GREEN) Running Docker container...
 	docker run -p $(PORT):$(PORT) $(APP)
 
 docker-shell:
-	@echo $(BLUE) Entering container shell...
-	docker run -it $(APP) /bin/sh
+	$(BLUE) Entering container shell...
+	docker run -it $(APP) sh
 
 docker-clean:
-	@echo $(RED) Cleaning unused Docker data...
+	$(RED) Cleaning Docker system...
 	docker system prune -f
 
 # ================================
-# MODEL VERSIONING
+# MODELS
 # ================================
 
 model-list:
-	@echo $(BLUE) Listing models...
-	@dir app\\models
+	$(BLUE) Listing models...
+	dir app/models
 
 model-load:
-	@echo $(GREEN) Loading model version $(v)...
+	$(GREEN) Loading model version $(v)...
 	curl -X GET "http://localhost:$(PORT)/switch-model/$(v)"
 
 # ================================
-# UTILITIES
-# ================================
-
-show-env:
-	@echo $(BLUE) Showing .env content:
-	@type .env
-
-clean-cache:
-	@echo $(RED) Removing __pycache__...
-	@if exist __pycache__ rmdir /s /q __pycache__
-
-# ================================
-# DEFAULT COMMAND
+# DEFAULT
 # ================================
 
 help:
-	@echo Available commands:
-	@echo make run
-	@echo make train
-	@echo make test
-	@echo make docker-build
-	@echo make docker-run
-	@echo make model-load v=v1
+	@echo "Available commands:"
+	@echo " make run"
+	@echo " make train"
+	@echo " make test"
+	@echo " make docker-build"
+	@echo " make docker-run"
+	@echo " make model-list"
+	@echo " make model-load v=v2"
